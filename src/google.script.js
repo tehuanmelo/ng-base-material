@@ -6,7 +6,7 @@ const SHEET_NAME = "data";
 const SETTINGS_SHEET_NAME = "settings";
 const MISSING_BASES_SHEET_NAME = "missing-bases";
 const REPORT_RECIPIENT = "tehuanmelo@gmail.com";
-const FORM_URL = "https://example.com";
+const FORM_URL = "https://ng-base-material.netlify.app;
 
 const MATERIAL_HEADERS = [
   "pistola",
@@ -609,7 +609,6 @@ function buildMaterialReportHtml_(report) {
       <main class="content">
         <section class="intro">
           <span class="eyebrow">Overview</span>
-          <h2>Material reported by each base</h2>
         </section>
         <table class="summary"><tr>
           <td><strong>${report.submissions.length}</strong><span>Total bases</span></td>

@@ -9,6 +9,17 @@ type Material = {
   category: 'Close Combate' | 'Strike' | 'Jiu-jitsu'
 }
 
+type SubmissionSummary = {
+  professor: string
+  base: string
+  submittedAt: string
+  materials: Array<{
+    name: string
+    quantity: number
+  }>
+  notes: string
+}
+
 const materialGroups: Material['category'][] = ['Close Combate', 'Strike', 'Jiu-jitsu']
 
 const materials: Material[] = [
@@ -119,6 +130,9 @@ function App() {
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submittedSummary, setSubmittedSummary] =
+    useState<SubmissionSummary | null>(null)
+  const [submitError, setSubmitError] = useState('')
   const [showErrors, setShowErrors] = useState(false)
 
   const totalItems = useMemo(
@@ -142,15 +156,87 @@ function App() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setShowErrors(true)
+    setSubmitError('')
 
-    if (!psNumber || !base || totalItems === 0) return
+    if (!psNumber || !base || (totalItems === 0 && !notes.trim())) return
+
+    const endpoint = import.meta.env.VITE_GOOGLE_SHEETS_WEB_APP_URL
+    if (!endpoint || endpoint.includes('YOUR_DEPLOYMENT_ID')) {
+      setSubmitError(
+        'Configure o URL do Google Apps Script no ficheiro .env antes de enviar.',
+      )
+      return
+    }
+
+    const selectedCoach = psOptions.find((option) => option.value === psNumber)
+    if (!selectedCoach) {
+      setSubmitError('Não foi possível identificar o professor selecionado.')
+      return
+    }
+
+    const submissionDate = new Date()
 
     setIsSubmitting(true)
-    await new Promise((resolve) => window.setTimeout(resolve, 850))
-    setIsSubmitting(false)
-    setSubmitted(true)
-    setShowErrors(false)
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          submittedAt: submissionDate.toISOString(),
+          coach: {
+            ps: selectedCoach.value,
+            name: selectedCoach.label.replace(`${selectedCoach.value} — `, ''),
+          },
+          base,
+          materials: quantities,
+          notes,
+        }),
+      })
+
+      const result = (await response.json()) as {
+        ok: boolean
+        error?: string
+      }
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || 'O Google Sheets rejeitou o registo.')
+      }
+
+      setSubmittedSummary({
+        professor: selectedCoach.label,
+        base,
+        submittedAt: submissionDate.toLocaleString('pt-BR', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+        }),
+        materials: materials
+          .filter((material) => quantities[material.id] > 0)
+          .map((material) => ({
+            name: material.name,
+            quantity: quantities[material.id],
+          })),
+        notes,
+      })
+      setSubmitted(true)
+      setShowErrors(false)
+      setPsNumber('')
+      setBase('')
+      setQuantities({ ...initialQuantities })
+      setNotes('')
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    } catch (error) {
+      setSubmitted(false)
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível registar o inventário. Tente novamente.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -321,9 +407,9 @@ function App() {
                 )
               })}
             </div>
-            {showErrors && totalItems === 0 && (
+            {showErrors && totalItems === 0 && !notes.trim() && (
               <p className="inventory-error" role="alert">
-                Adicione pelo menos uma unidade antes de enviar.
+                Adicione pelo menos uma unidade ou explique a situação nas observações.
               </p>
             )}
           </section>
@@ -340,7 +426,10 @@ function App() {
               <span className="sr-only">Observações adicionais</span>
               <textarea
                 value={notes}
-                onChange={(event) => setNotes(event.target.value)}
+                onChange={(event) => {
+                  setNotes(event.target.value)
+                  setSubmitted(false)
+                }}
                 maxLength={300}
                 placeholder="Ex.: 2 pares de luvas precisam de substituição..."
               />
@@ -348,13 +437,61 @@ function App() {
             </label>
           </section>
 
-          {submitted && (
+          {submitted && submittedSummary && (
             <div className="success-message" role="status">
               <span className="success-icon"><CheckIcon /></span>
-              <div>
-                <strong>Inventário registrado com sucesso</strong>
-                <p>Os dados de demonstração foram preparados para envio ao Google Sheets.</p>
+              <div className="success-content">
+                <div className="success-heading">
+                  <div>
+                    <strong>Inventário registrado com sucesso</strong>
+                    <p>Os dados abaixo foram enviados para o Google Sheets.</p>
+                  </div>
+                  <time>{submittedSummary.submittedAt}</time>
+                </div>
+
+                <dl className="submission-details">
+                  <div>
+                    <dt>Professor</dt>
+                    <dd>{submittedSummary.professor}</dd>
+                  </div>
+                  <div>
+                    <dt>Base</dt>
+                    <dd>{submittedSummary.base}</dd>
+                  </div>
+                </dl>
+
+                {submittedSummary.materials.length > 0 ? (
+                  <div className="submitted-materials">
+                    <span>Material enviado</span>
+                    <ul>
+                      {submittedSummary.materials.map((material) => (
+                        <li key={material.name}>
+                          <span>{material.name}</span>
+                          <strong>{material.quantity}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="no-material-summary">
+                    Nenhum equipamento foi registado nesta submissão.
+                  </p>
+                )}
+
+                {submittedSummary.notes && (
+                  <div className="submitted-notes">
+                    <span>Observações</span>
+                    <p>{submittedSummary.notes}</p>
+                  </div>
+                )}
               </div>
+            </div>
+          )}
+
+          {submitError && (
+            <div className="submission-error" role="alert">
+              <strong>Não foi possível enviar o formulário</strong>
+              <p>{submitError}</p>
             </div>
           )}
 

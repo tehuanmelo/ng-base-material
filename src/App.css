@@ -521,7 +521,7 @@ textarea {
 
 .success-message {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 13px;
   color: #225c39;
   background: #edf7f0;
@@ -529,6 +529,27 @@ textarea {
   border-radius: 9px;
   margin-top: 18px;
   padding: 15px 17px;
+}
+
+.submission-error {
+  color: #7a271a;
+  background: #fff2f0;
+  border: 1px solid #f0c6c0;
+  border-radius: 9px;
+  margin-top: 18px;
+  padding: 15px 17px;
+}
+
+.submission-error strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+
+.submission-error p {
+  color: #9b3a2c;
+  font-size: 11px;
+  margin: 0;
 }
 
 .success-icon {
@@ -563,6 +584,122 @@ textarea {
   color: #4a7558;
   font-size: 11px;
   margin: 0;
+}
+
+.success-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.success-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.success-heading time {
+  color: #4a7558;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.submission-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+
+.submission-details > div {
+  min-width: 0;
+  background: rgb(255 255 255 / 55%);
+  border: 1px solid rgb(56 128 78 / 14%);
+  border-radius: 6px;
+  padding: 9px 11px;
+}
+
+.submission-details dt,
+.submitted-materials > span,
+.submitted-notes > span {
+  display: block;
+  color: #4a7558;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.submission-details dd {
+  overflow: hidden;
+  color: #225c39;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 4px 0 0;
+}
+
+.submitted-materials,
+.submitted-notes {
+  margin-top: 15px;
+}
+
+.success-message .no-material-summary {
+  color: #4a7558;
+  background: rgb(255 255 255 / 55%);
+  border: 1px dashed rgb(56 128 78 / 28%);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  margin: 15px 0 0;
+  padding: 9px 11px;
+}
+
+.submitted-materials ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 7px 0 0;
+  padding: 0;
+}
+
+.submitted-materials li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #315f40;
+  background: rgb(255 255 255 / 65%);
+  border: 1px solid rgb(56 128 78 / 18%);
+  border-radius: 999px;
+  padding: 5px 8px 5px 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.submitted-materials li strong {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  color: white;
+  background: #38804e;
+  border-radius: 999px;
+  font-size: 9px;
+  margin: 0;
+}
+
+.submitted-notes p {
+  color: #315f40;
+  background: rgb(255 255 255 / 55%);
+  border-left: 2px solid #78a786;
+  border-radius: 0 5px 5px 0;
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 7px 0 0;
+  padding: 8px 10px;
 }
 
 .form-footer {
@@ -772,6 +909,16 @@ textarea {
 
   .submit-button {
     width: 100%;
+  }
+
+  .success-heading,
+  .submission-details {
+    grid-template-columns: 1fr;
+  }
+
+  .success-heading {
+    flex-direction: column;
+    gap: 8px;
   }
 }
 

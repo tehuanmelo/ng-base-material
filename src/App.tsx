@@ -251,9 +251,9 @@ function App() {
             alt="National Guard"
           />
           <div className="brand-copy">
-            <p className="eyebrow">National Guard</p>
-            <h1>Inventário de materiais</h1>
-            <p>Controlo de equipamentos disponíveis na base</p>
+            {/* <p className="eyebrow">National Guard</p> */}
+            <h1>National Guard</h1>
+            <p>Controle de equipamentos</p>
           </div>
           <div className="status-pill">
             <span /> Formulário ativo
